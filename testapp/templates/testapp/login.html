@@ -1,0 +1,29 @@
+{% extends "testapp/base.html" %}
+
+
+{% block login%}
+
+
+<div class="login-container">
+    <div class="login-form">
+        <h2>Вход</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="order_btn type="submit">Войти</button>
+        <a href="{% url 'password_reset' %}">Забыли пароль?</a>
+
+    </form>
+        <div class="login_google">
+            <div class="line"></div>
+            <div class="login_text">или</div>
+            <div class="line"></div>
+        </div>
+
+        <p><button class="order_btn type="submit">Google</button></p>
+    </div>
+</div>
+
+<hr>
+{% endblock login %}
+

@@ -1,0 +1,16 @@
+{% extends "testapp/base.html" %}
+
+{% block test_result_bad%}
+
+<div class="login-container">
+    <div class="login-form">
+        <h1>Test Result Bad</h1>
+        <p>Score: {{ score }} out of {{ test.questions.count }}</p>
+        <a href="{% url 'test_list' %}">Back to Test List</a>
+        <a href="{% url 'test_statistics' test.id %}">View Test Statistics</a>
+        <a href="{% url 'create_certificate' test.id %}" target="_blank">Скачать сертификат</a>
+    </div>
+</div>
+
+<hr>
+{% endblock test_result_bad %}l

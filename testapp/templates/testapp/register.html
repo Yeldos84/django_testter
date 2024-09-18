@@ -1,0 +1,27 @@
+{% extends "testapp/base.html" %}
+
+
+{% block login%}
+
+
+<div class="login-container">
+    <div class="login-form">
+        <h2>Регистрация</h2>
+        {% if request.user.is_authenticated %}
+        <span style="color:#000; font-size:20px">{{ request.user.first_name|upper }},</span>
+        <p style="color:#f44336">Вы уже авторизованы</p>
+        <p>Если вы хотите по новой зарегистрироваться, нажмите <a href="{% url 'logout' %}">Выйти</a></p>
+
+        {% else %}
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="order_btn type="submit">Регистрация</button>
+    </form>
+    {% endif %}
+    </div>
+</div>
+
+<hr>
+{% endblock login %}
+

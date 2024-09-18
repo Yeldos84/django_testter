@@ -1,0 +1,19 @@
+{% extends "testapp/base.html" %}
+{% block title %}Logged out{% endblock %}
+
+{% block logout %}
+<div class="login-container">
+    <div class="login-form">
+        <h1>
+            {% if messages %}
+            {% for message in messages %}
+            {{ message }}
+            {% endfor %}
+            {% endif %}
+        </h1>
+        <p>Вы успешно вышли из системы. Вы можете <a href="{% url 'login' %}">Войти снова</a>.</p>
+    </div>
+</div>
+<hr>
+{% endblock logout %}
+

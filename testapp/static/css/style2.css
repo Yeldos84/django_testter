@@ -1,0 +1,10 @@
+@font-face {
+    font-family: 'DejaVuSans';
+    src: 'C:\Windows\Fonts\SEGOEUIL.ttf';
+}
+body {
+    font-family: 'DejaVuSans', sans-serif;
+}
+h1{
+    color: #f44336;
+}

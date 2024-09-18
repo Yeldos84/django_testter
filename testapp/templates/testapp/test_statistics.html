@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head><title>Test Statistics</title></head>
+<body>
+  <h1>{{ test.title }} - Statistics</h1>
+  <h2>Overall Statistics</h2>
+  <p>Total Attempts: {{ overall_stats.total_attempts }}</p>
+  <p>Average Score: {{ overall_stats.average_score }}</p>
+
+  <h2>User Statistics</h2>
+  <table border="1">
+    <tr>
+      <th>Username</th>
+      <th>Attempts</th>
+      <th>Average Score</th>
+    </tr>
+    {% for stat in user_stats %}
+      <tr>
+        <td>{{ stat.user__username }}</td>
+        <td>{{ stat.count }}</td>
+        <td>{{ stat.avg_score }}</td>
+      </tr>
+    {% endfor %}
+  </table>
+
+  <a href="{% url 'test_list' %}">Back to Test List</a>
+</body>
+</html>

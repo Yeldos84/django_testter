@@ -1,0 +1,29 @@
+{% extends "testapp/base.html" %}
+
+
+{% block test_detail%}
+
+
+<div class="login-container">
+    <div class="login-form">
+        <h2>{{ test.title }}</h2>
+    <form class="answer_form" action="{% url 'submit_test' test.id %}" method="post">
+    {% csrf_token %}
+    {% for question in questions %}
+      <fieldset>
+        <legend style="margin-bottom:10px"><b>{{ forloop.counter }} {{ question.text }}</b></legend>
+        {% for answer in question.answers.all %}
+          <label id="answer">
+            <input id="answer_id" type="radio" name="question_{{ question.id }}" value="{{ answer.id }}" required >
+            {{ answer.text }}
+          </label><br>
+        {% endfor %}
+      </fieldset>
+    {% endfor %}
+    <button class="order_btn type="submit">Ответить</button>
+    </form>
+    </div>
+</div>
+
+<hr>
+{% endblock test_detail %}

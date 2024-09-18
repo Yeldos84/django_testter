@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>КПК</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="container">
+        <div class="top">
+            <div class="logo"><a href="/"><img src="{% static "images/Group 49.png" %}" alt="logo" ></a></div>
+            <div><a href="/">Главная</a></div>
+            <div><a href="/register">Регистрация</a></div>
+            <div><a href="{% url 'test_list' %}">Тестирование</a></div>
+            <div><a href="#">Контакты</a></div>
+            <div><button class="btn_contact" style="width: 150px;height:50px">
+                {% if request.user.is_authenticated %}
+                <span style="color:#FFF">Привет {{ request.user.first_name|upper }},</span>
+                <a href="{% url 'logout' %}">Выйти</a>
+                {% else %}
+                <a href="{% url 'login' %}">Вход</a>
+                {% endif %}
+            </button></div>
+        </div>
+
+    <div>{% block content %}{% endblock content %}</div>
+    <div>{% block login %}{% endblock login %}</div>
+    <div>{% block register %}{% endblock register %}</div>
+    <div>{% block logout %}{% endblock logout %}</div>
+    <div>{% block psw_reset %}{% endblock psw_reset %}</div>
+    <div>{% block psw_reset_done %}{% endblock psw_reset_done %}</div>
+    <div>{% block psw_reset_done_confirm %}{% endblock psw_reset_done_confirm %}</div>
+    <div>{% block psw_reset_complete %}{% endblock psw_reset_complete %}</div>
+    <div>{% block test_list %}{% endblock test_list %}</div>
+    <div>{% block test_detail %}{% endblock test_detail %}</div>
+    <div>{% block test_result %}{% endblock test_result %}</div>
+    <div>{% block test_result_bad %}{% endblock test_result_bad %}</div>
+    <div>{% block q %}{% endblock q %}</div>
+
+
+        <div class="section5">
+            <div class="s5_left">
+                <div class="map">
+                    <img src="{% static "images/snazzy-image (1) 1.png" %}" alt="map" >
+                    <div class="maps_contact">Contacts</div>
+                </div>
+            </div>
+            <div class="s5_middle">
+                <div class="line"></div>
+            </div>
+            <div class="s5_right">
+                <div class="s5_h3">Our address</div>
+                <div class="s5_p1">110 St-Cathedral Pkwy Station</div>
+                <div class="s5_p1">4310 94th St, Flushing</div>
+                <div class="s5_p1">94-54 Corona Ave., Elmhurst</div>
+                <div class="s5_p1">5627 Van Doren St, Queens</div>
+            </div>
+        </div>
+        <div class="section6">
+            <div class="copyrait">2024 (c) - Yeldos Sabyrbekov</div>
+        </div>
+
+    </div>
+</body>
+</html>
