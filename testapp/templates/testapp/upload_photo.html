@@ -1,0 +1,18 @@
+{% extends "testapp/base.html" %}
+
+{% block upload%}
+
+<div class="login-container">
+    <div class="login-form">
+        <h1>Загрузите фото</h1>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="order_btn type="submit">Upload</button>
+    </form>
+
+    </div>
+</div>
+
+<hr>
+{% endblock upload %}

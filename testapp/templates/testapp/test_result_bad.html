@@ -4,11 +4,13 @@
 
 <div class="login-container">
     <div class="login-form">
-        <h1>Test Result Bad</h1>
-        <p>Score: {{ score }} out of {{ test.questions.count }}</p>
-        <a href="{% url 'test_list' %}">Back to Test List</a>
-        <a href="{% url 'test_statistics' test.id %}">View Test Statistics</a>
-        <a href="{% url 'create_certificate' test.id %}" target="_blank">Скачать сертификат</a>
+
+        <h2>{{request.user.first_name}} {{request.user.last_name}}</h2>
+        <h2>Вы не прошли тестирование</h2>
+        <div class="test_result_bad">
+            <span>Правильные ответы: {{ score }} из {{ test.questions.count }}</span>
+            <a href="{% url 'test_list' %}">Пройти снова</a>
+        </div>
     </div>
 </div>
 

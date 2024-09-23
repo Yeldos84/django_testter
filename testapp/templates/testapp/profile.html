@@ -1,0 +1,21 @@
+{% extends "testapp/base.html" %}
+
+{% block profile%}
+
+<div class="login-container">
+    <div class="login-form">
+        <h2>Профиль</h2>
+        <div class="profile">
+                {% if user.is_authenticated %}
+                    <img class="photo" src="{{ photos }}" alt="Profile Picture">
+                {% else %}
+                    <button class="photo" type="submit"><a href="{% url 'upload_photo' %}"><p style="font-size:10px">Загрузить фото</p></a></button>
+                {% endif %}
+            <h2>{{request.user.first_name}} {{request.user.last_name}}</h2>
+        </div>
+
+    </div>
+</div>
+
+<hr>
+{% endblock profile %}

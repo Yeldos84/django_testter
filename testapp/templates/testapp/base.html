@@ -14,10 +14,10 @@
             <div><a href="/">Главная</a></div>
             <div><a href="/register">Регистрация</a></div>
             <div><a href="{% url 'test_list' %}">Тестирование</a></div>
-            <div><a href="#">Контакты</a></div>
+            <div><a href="{% url 'apis' %}">API</a></div>
             <div><button class="btn_contact" style="width: 150px;height:50px">
                 {% if request.user.is_authenticated %}
-                <span style="color:#FFF">Привет {{ request.user.first_name|upper }},</span>
+                <span style="color:#FFF">Привет <a style="color:#FFF" href="{% url 'profile' %}">{{ request.user.first_name|upper }},</a></span>
                 <a href="{% url 'logout' %}">Выйти</a>
                 {% else %}
                 <a href="{% url 'login' %}">Вход</a>
@@ -37,6 +37,9 @@
     <div>{% block test_detail %}{% endblock test_detail %}</div>
     <div>{% block test_result %}{% endblock test_result %}</div>
     <div>{% block test_result_bad %}{% endblock test_result_bad %}</div>
+    <div>{% block profile %}{% endblock profile %}</div>
+    <div>{% block upload %}{% endblock upload %}</div>
+    <div>{% block api %}{% endblock api %}</div>
     <div>{% block q %}{% endblock q %}</div>
 
 

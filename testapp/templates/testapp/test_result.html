@@ -4,11 +4,15 @@
 
 <div class="login-container">
     <div class="login-form">
-        <h1>Test Result</h1>
-        <p>Score: {{ score }} out of {{ test.questions.count }}</p>
-        <a href="{% url 'test_list' %}">Back to Test List</a>
-        <a href="{% url 'test_statistics' test.id %}">View Test Statistics</a>
-        <a href="{% url 'create_certificate' test.id %}" target="_blank">Скачать сертификат</a>
+        <h2>{{request.user.first_name}} {{request.user.last_name}}</h2>
+        <h2>Поздравляем!</h2>
+        <h3>Вы успешно прошли тестирование</h3>
+        <span>Правильные ответы: {{ score }} из {{ test.questions.count }}</span>
+        <div class="test_result">
+            <a href="{% url 'test_list' %}">Назад к тестам</a>
+<!--            <a href="{% url 'test_statistics' test.id %}">Посмотреть статистику</a>-->
+            <a href="{% url 'create_certificate' test.id %}" target="_blank">Скачать сертификат</a>
+        </div>
     </div>
 </div>
 

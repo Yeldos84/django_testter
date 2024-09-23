@@ -1,4 +1,5 @@
 from django import forms
+from . models import ProfilePhoto
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordResetForm, SetPasswordForm
 from django.contrib.auth.models import User
 from .models import Question
@@ -36,6 +37,14 @@ class TestterPasswordResetForm(PasswordResetForm):
 
 class TestterSetPasswordForm(SetPasswordForm):
     pass
+
+
+class PhotoForm(forms.ModelForm):
+    photo = forms.ImageField(label='Select photo', required=False)
+
+    class Meta:
+        model = ProfilePhoto
+        fields = ['photo']
 
 
 

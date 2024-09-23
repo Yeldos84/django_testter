@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Test, Question, Answer, Result, TestResult
+from .models import Test, Question, Answer, Result, TestResult, ProfilePhoto
 
 class TestResultAdmin(admin.ModelAdmin):
     list_display = ['test', 'user', 'score']
@@ -31,4 +31,5 @@ admin.site.register(Answer)
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(Test)
 admin.site.register(Result)
+admin.site.register(ProfilePhoto)
 admin.site.register(TestResult, TestResultAdmin)

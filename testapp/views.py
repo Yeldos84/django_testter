@@ -1,7 +1,8 @@
 import os
 import io
+from datetime import datetime
 
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404, get_list_or_404
 from django.http import HttpResponse, FileResponse
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.forms import AuthenticationForm
@@ -13,17 +14,19 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 from reportlab.pdfbase import pdfmetrics
 
-from .forms import TestterUserCreationForm, TestterAuthenticationForm, PasswordResetForm
+from .forms import TestterUserCreationForm, TestterAuthenticationForm, PasswordResetForm, PhotoForm
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from .models import Test, Question, Answer, TestResult
+from .models import Test, Question, Answer, TestResult, ProfilePhoto
 from django.db.models import Avg, Count
 
 from xhtml2pdf import pisa
 from io import BytesIO
 
+from rest_framework.viewsets import ReadOnlyModelViewSet
+from . serializers import QuestionsSerializer, TestSerializer
 
 def base(request):
     return render(request, "testapp/base.html")
@@ -33,6 +36,23 @@ def base(request):
 def index(request):
     return render(request, "testapp/index.html")
 
+
+def profile(request):
+    # photos = ProfilePhoto.objects.values('photo')[0].get('photo')
+    # photos = '/media/' + photos
+
+    photos = ProfilePhoto.objects.all()
+    return render(request,'testapp/profile.html',{'photos': photos})
+
+def upload_photo(request):
+    if request.method == 'POST':
+        form = PhotoForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('profile')
+    else:
+        form = PhotoForm()
+    return render(request, 'testapp/upload_photo.html', {'form': form})
 
 #
 #
@@ -253,7 +273,7 @@ def create_certificate(request, test_id):
     c.drawCentredString(width / 2, height - 200, f"Этот сертификат подтверждает, что")
 
     c.setFont("MyFont", 30)
-    c.drawCentredString(width / 2, height - 250, f'{request.user.first_name} {request.user.last_name}')
+    c.drawCentredString(width / 2, height - 250, f'{request.user.last_name} {request.user.first_name}')
 
     # Название курса
     c.setFont("MyFont", 24)
@@ -267,7 +287,25 @@ def create_certificate(request, test_id):
     # Дата
     c.setFont("MyFont", 18)
     c.setFillColor(colors.black)
-    c.drawCentredString(width / 2, height - 450, "Дата: 18 Сентября 2024")
+    now = datetime.now()
+    f_date = now.strftime("%d %B %Y")
+    months = {
+        "January": "Января",
+        "February": "Февраля",
+        "March": "Марта",
+        "April": "Апреля",
+        "May": "Мая",
+        "June": "Июня",
+        "July": "Июля",
+        "August": "Августа",
+        "September": "Сентября",
+        "October": "Октября",
+        "November": "Ноября",
+        "December": "Декабря",
+    }
+    for eng, rus in months.items():
+        f_date = f_date.replace(eng, rus)
+    c.drawCentredString(width / 2, height - 450, f"Дата: {f_date}")
 
     # Подпись
     c.setFont("MyFont", 18)
@@ -296,4 +334,14 @@ def create_certificate(request, test_id):
 
     return response
 
-#####################################################
+# APIs ReadOnly
+
+def render_api(request):
+    return render(request, 'testapp/apis.html')
+class ApiQuestionsViewset(ReadOnlyModelViewSet):
+    queryset = Question.objects.all()
+    serializer_class = QuestionsSerializer
+
+class ApiTestViewset(ReadOnlyModelViewSet):
+    queryset = Test.objects.all()
+    serializer_class = TestSerializer
