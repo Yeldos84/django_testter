@@ -42,17 +42,61 @@ def profile(request):
     # photos = '/media/' + photos
 
     photos = ProfilePhoto.objects.all()
-    return render(request,'testapp/profile.html',{'photos': photos})
+    return render(request,'testapp/profile.html', {'photos': photos})
 
 def upload_photo(request):
+    profile, created = ProfilePhoto.objects.get_or_create(user=request.user)
     if request.method == 'POST':
-        form = PhotoForm(request.POST, request.FILES)
+        form = PhotoForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
             form.save()
             return redirect('profile')
     else:
-        form = PhotoForm()
+        form = PhotoForm(instance=profile)
     return render(request, 'testapp/upload_photo.html', {'form': form})
+
+# Logs
+
+def logs(request):
+    f = open('g:/dlog/django.log')
+    file_content = f.read()
+    f.close()
+    return HttpResponse(file_content, content_type="text/plain")
+
+# Excel
+
+import pandas as pd
+
+def results_to_excel_ok(request):
+    results = TestResult.objects.filter(score__gte=3).select_related('test')
+    data = results.values('test__title', 'user__username', 'score')
+    df = pd.DataFrame(data)
+    df.rename(columns={
+        'test__title': 'Название Тестов',
+        'user__username': 'пользователь',
+        'score': 'Баллы'
+    }, inplace=True)
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename="res_ok.xlsx"'
+    df.to_excel(response, index=False)
+
+    return response
+
+
+def results_to_excel_no(request):
+    results = TestResult.objects.filter(score__lt=3).select_related('test')
+    data = results.values('test__title', 'user__username', 'score')
+    df = pd.DataFrame(data)
+    df.rename(columns={
+        'test__title': 'Название Тестов',
+        'user__username': 'пользователь',
+        'score': 'Баллы'
+    }, inplace=True)
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename="res_no.xlsx"'
+    df.to_excel(response, index=False)
+
+    return response
 
 #
 #
@@ -199,25 +243,20 @@ def generate_pdf(request):
     return render_to_pdf('testapp/pdf.html', context)
 
 
-from reportlab.lib.pagesizes import A4
+
 from reportlab.lib.units import inch
 from reportlab.lib.colors import pink, green, brown, white
 
 
 def some_view(request):
-    # Create a file-like buffer to receive PDF data.
     buffer = io.BytesIO()
-
-    # Create the PDF object, using the buffer as its "file."
     p = canvas.Canvas(buffer)
-
     c = User.objects.all()
     r = [q for q in c]
     pdfmetrics.registerFont(TTFont('MyFont', 'C:\Windows\Fonts\SEGOEUIL.ttf'))
     p.setFont('MyFont', 12)
     my_string = ",".join(str(element) for element in r)
-    # print(my_string.encode(encoding='utf-8').decode())
-    # print(type(r))
+
     x = 0
     dx = 0.4 * inch
     for i in range(4):
@@ -233,8 +272,6 @@ def some_view(request):
     p.showPage()
     p.save()
 
-    # FileResponse sets the Content-Disposition header so that browsers
-    # present the option to save the file.
     buffer.seek(0)
     return FileResponse(buffer, as_attachment=True, filename="logs.pdf")
 
@@ -335,7 +372,6 @@ def create_certificate(request, test_id):
     return response
 
 # APIs ReadOnly
-
 def render_api(request):
     return render(request, 'testapp/apis.html')
 class ApiQuestionsViewset(ReadOnlyModelViewSet):

@@ -6,12 +6,30 @@
     <div class="login-form">
         <h2>Профиль</h2>
         <div class="profile">
-                {% if user.is_authenticated %}
-                    <img class="photo" src="{{ photos }}" alt="Profile Picture">
+                {% for p in photos %}
+
+                        <img class="photo" src="{{ p.photo.url }}" alt="Profile Picture">
+                    {% empty %}
+                        <button class="photo" type="submit"><a href="{% url 'upload_photo' %}"><p style="font-size:10px">Загрузить фото</p></a></button>
+
+                {% endfor %}
+            <ul>
+                <li><span>ФИО:</span> {{request.user.first_name}} {{request.user.last_name}}</li>
+                <li><span>Почта:</span> {{request.user.email}}</li>
+                {% if request.user.is_staff == True %}
+                    <li><span>Роль:</span>Администратор</li>
+                    <p><a href="{% url 'logs' %}" target="_blank">Посмотреть логи системы</a></p>
+                    <h4>Результаты тестов:</h4>
+                    <div style="display:flex; gap:20px">
+                         <a style="color:green" href="{% url 'res' %}" target="_blank">Прошедшие</a>
+                         <a style="color:red" href="{% url 'res2' %}" target="_blank">Не прошедшие</a>
+                    </div>
+
                 {% else %}
-                    <button class="photo" type="submit"><a href="{% url 'upload_photo' %}"><p style="font-size:10px">Загрузить фото</p></a></button>
+                    <li><span>Роль:</span> Пользователь</li>
                 {% endif %}
-            <h2>{{request.user.first_name}} {{request.user.last_name}}</h2>
+            </ul>
+
         </div>
 
     </div>

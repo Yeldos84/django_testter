@@ -5,7 +5,7 @@
 <div class="login-container">
     <div class="login-form">
         <h2>{{request.user.first_name}} {{request.user.last_name}}</h2>
-        <h2>Поздравляем!</h2>
+        <h4>Поздравляем!</h4>
         <h3>Вы успешно прошли тестирование</h3>
         <span>Правильные ответы: {{ score }} из {{ test.questions.count }}</span>
         <div class="test_result">

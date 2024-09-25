@@ -33,6 +33,10 @@ urlpatterns = [
     path('apis/', views.render_api, name='apis'),
     path('api/', include(router.urls)),
 
+    path('logs/', views.logs, name='logs'),
+    path('res/', views.results_to_excel_ok, name='res'),
+    path('res2/', views.results_to_excel_no, name='res2'),
+
 
 
 

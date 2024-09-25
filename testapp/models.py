@@ -61,8 +61,8 @@ class Result(models.Model):
 
 
 class TestResult(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    test = models.ForeignKey(Test, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user')
+    test = models.ForeignKey(Test, on_delete=models.CASCADE, related_name='test')
     score = models.IntegerField()
     date_taken = models.DateTimeField(auto_now_add=True)
 
@@ -83,4 +83,4 @@ class ProfilePhoto(models.Model):
                            error_messages={'invalid_extension': 'This file do not supported!'})
 
     def __str__(self):
-        return f'{self.photo.name}'
+        return f'{self.photo}'
