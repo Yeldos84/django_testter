@@ -25,8 +25,8 @@ from django.db.models import Avg, Count
 from xhtml2pdf import pisa
 from io import BytesIO
 
-from rest_framework.viewsets import ReadOnlyModelViewSet
-from . serializers import QuestionsSerializer, TestSerializer
+from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
+from . serializers import QuestionsSerializer, TestSerializer, AnswerSerializer, UserSerializer
 
 def base(request):
     return render(request, "testapp/base.html")
@@ -381,3 +381,13 @@ class ApiQuestionsViewset(ReadOnlyModelViewSet):
 class ApiTestViewset(ReadOnlyModelViewSet):
     queryset = Test.objects.all()
     serializer_class = TestSerializer
+
+
+class ApiAnswerViewset(ReadOnlyModelViewSet):
+    queryset = Answer.objects.all()
+    serializer_class = AnswerSerializer
+
+
+class ApiUserViewset(ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer

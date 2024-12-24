@@ -27,7 +27,29 @@ SECRET_KEY = 'django-insecure-pq6yp(%-1-q5rl#sov!h&5t82=4)*^ahisu5qo*4obilv=bhu-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
+
+
+CORS_ALLOW_METHODS = [
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+]
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+    'access-control-allow-methods'
+]
 
 
 # Application definition
@@ -225,3 +247,8 @@ LOGGING = {
         },
     }
 }
+
+CORS_ALLOWED_ORIGINS = [
+"http://localhost:3000", #For React Project
+"http://127.0.0.1:8081"  #For Django Project
+]

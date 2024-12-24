@@ -6,6 +6,8 @@ from rest_framework.routers import DefaultRouter
 router = DefaultRouter()
 router.register('questions', views.ApiQuestionsViewset)
 router.register('tests', views.ApiTestViewset)
+router.register('answers', views.ApiAnswerViewset)
+router.register('users', views.ApiUserViewset)
 
 urlpatterns = [
     path("", views.index, name="index"),
