@@ -4,9 +4,9 @@ from django.contrib.auth import views as auth_views
 
 from rest_framework.routers import DefaultRouter
 router = DefaultRouter()
-router.register('questions', views.ApiQuestionsViewset)
+router.register(r'questions', views.ApiQuestionsViewset)
 router.register('tests', views.ApiTestViewset)
-router.register('answers', views.ApiAnswerViewset)
+router.register(r'answers', views.ApiAnswerViewset)
 router.register('users', views.ApiUserViewset)
 
 urlpatterns = [

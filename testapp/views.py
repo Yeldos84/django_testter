@@ -28,6 +28,10 @@ from io import BytesIO
 from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
 from . serializers import QuestionsSerializer, TestSerializer, AnswerSerializer, UserSerializer
 
+from rest_framework import generics
+from .filters import QuestionFilter, AnswerFilter
+from django_filters.rest_framework import DjangoFilterBackend
+
 def base(request):
     return render(request, "testapp/base.html")
 
@@ -374,19 +378,21 @@ def create_certificate(request, test_id):
 # APIs ReadOnly
 def render_api(request):
     return render(request, 'testapp/apis.html')
-class ApiQuestionsViewset(ReadOnlyModelViewSet):
+class ApiQuestionsViewset(ModelViewSet):
     queryset = Question.objects.all()
     serializer_class = QuestionsSerializer
-
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = QuestionFilter
 class ApiTestViewset(ReadOnlyModelViewSet):
     queryset = Test.objects.all()
     serializer_class = TestSerializer
 
 
-class ApiAnswerViewset(ReadOnlyModelViewSet):
+class ApiAnswerViewset(ModelViewSet):
     queryset = Answer.objects.all()
     serializer_class = AnswerSerializer
-
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = AnswerFilter
 
 class ApiUserViewset(ModelViewSet):
     queryset = User.objects.all()
