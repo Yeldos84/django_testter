@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Проверка возраста и гендера</title>
+    <style>
+        #container {
+            position: relative;
+            width: 320px;
+            height: 240px;
+        }
+        video, canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+    <h2>Добро пожаловать!</h2>
+
+    <button onclick="checkCamera()">🔍 Войти по лицу</button>
+    <p id="status" style="color: red;"></p>
+
+    <div id="container">
+        <video id="video" width="320" height="240" autoplay muted style="display: none;"></video>
+        <canvas id="overlay" width="320" height="240"></canvas>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.2.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
+
+    <script>
+        const statusElem = document.getElementById('status');
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('overlay');
+        const ctx = canvas.getContext('2d');
+
+        // Порог уверенности (60%)
+        const confidenceThreshold = 0.6;
+
+        async function checkCamera() {
+            statusElem.textContent = "⏳ Инициализация камеры...";
+
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const hasCamera = devices.some(device => device.kind === 'videoinput');
+
+            if (!hasCamera) {
+                statusElem.textContent = "❌ Камера не найдена.";
+                return;
+            }
+
+            startFaceDetection();
+        }
+
+        async function startFaceDetection() {
+            statusElem.textContent = "⏳ Запуск камеры...";
+            video.style.display = 'block';
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+
+                const model = await blazeface.load();
+                statusElem.textContent = "📷 Камера активна. Ожидание лица...";
+
+                const detect = async () => {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                    const predictions = await model.estimateFaces(video, false);
+
+                    if (predictions.length > 0) {
+                        let highestConfidence = 0;
+                        let selectedFace = null;
+
+                        // Проверяем все найденные лица и выбираем самое уверенное
+                        predictions.forEach(prediction => {
+                            if (prediction.confidence > highestConfidence) {
+                                highestConfidence = prediction.confidence;
+                                selectedFace = prediction;
+                            }
+                        });
+
+                        // Если находим лицо с достаточной уверенностью
+                        if (highestConfidence >= confidenceThreshold) {
+                            const [x, y] = selectedFace.topLeft;
+                            const [x2, y2] = selectedFace.bottomRight;
+                            const width = x2 - x;
+                            const height = y2 - y;
+
+                            // Рисуем рамку
+                            ctx.beginPath();
+                            ctx.strokeStyle = "lime";
+                            ctx.lineWidth = 2;
+                            ctx.rect(x, y, width, height);
+                            ctx.stroke();
+
+                            // Надпись
+                            ctx.font = "16px Arial";
+                            ctx.fillStyle = "lime";
+                            ctx.fillText("Лицо найдено", x, y - 10);
+
+                            statusElem.textContent = "✅ Лицо распознано! Перенаправление...";
+
+                            // Отправка данных на сервер
+                            setTimeout(() => {
+                                window.location.href = "/profile/"; // Перенаправление на страницу профиля
+                            }, 1000);
+                        } else {
+                            statusElem.textContent = `❌ Лицо не распознано с достаточной уверенностью. Confidence: ${highestConfidence.toFixed(2)}`;
+                        }
+                    } else {
+                        statusElem.textContent = "❌ Лицо не найдено. Попробуйте подойти ближе.";
+                        requestAnimationFrame(detect);
+                    }
+                };
+
+                detect();
+            } catch (err) {
+                statusElem.textContent = "❌ Ошибка доступа к камере: " + err.message;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -48,3 +48,11 @@ class PhotoForm(forms.ModelForm):
 
 
 
+class ChatbotForm(forms.Form):
+    message = forms.CharField(
+        label='Ваш вопрос',
+        widget=forms.Textarea(attrs={
+            'rows': 3,
+            'placeholder': 'Введите ваш вопрос здесь...'
+        })
+    )

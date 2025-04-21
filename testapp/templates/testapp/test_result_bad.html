@@ -9,6 +9,8 @@
         <h2>Вы не прошли тестирование</h2>
         <div class="test_result_bad">
             <span>Правильные ответы: {{ score }} из {{ test.questions.count }}</span>
+            <p>Вероятность успешной сдачи следующего теста: <b>{{ prediction }}%</b></p>
+            <p>Сдал: {{passed}}</p>
             <a href="{% url 'test_list' %}">Пройти снова</a>
         </div>
     </div>

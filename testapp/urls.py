@@ -17,7 +17,7 @@ urlpatterns = [
     path("pdf2", views.generate_pdf, name="pdf"),
     path('certificate/<int:test_id>', views.create_certificate, name='create_certificate'),
     path('register', views.register, name='register'),
-    path('profile', views.profile, name='profile'),
+    path('profile/', views.profile, name='profile'),
     path('upload/', views.upload_photo, name='upload_photo'),
     path('logout', views.logout, name='logout'),
     path('password_reset', auth_views.PasswordResetView.as_view(template_name='testapp/password_reset.html'),
@@ -35,9 +35,12 @@ urlpatterns = [
     path('apis/', views.render_api, name='apis'),
     path('api/', include(router.urls)),
 
+
     path('logs/', views.logs, name='logs'),
     path('res/', views.results_to_excel_ok, name='res'),
     path('res2/', views.results_to_excel_no, name='res2'),
+    path('questions/', views.questions, name='questions'),
+    path('face_detections/', views.face_detections),
 
 
 

@@ -15,6 +15,7 @@
             <div><a href="/register">Регистрация</a></div>
             <div><a href="{% url 'test_list' %}">Тестирование</a></div>
             <div><a href="{% url 'apis' %}">API</a></div>
+            <div><a href="{% url 'questions' %}">Задать вопрос</a></div>
             <div><button class="btn_contact" style="width: 150px;height:50px">
                 {% if request.user.is_authenticated %}
                 <span style="color:#FFF">Привет <a style="color:#FFF" href="{% url 'profile' %}">{{ request.user.first_name|upper }},</a></span>
@@ -41,6 +42,7 @@
     <div>{% block upload %}{% endblock upload %}</div>
     <div>{% block api %}{% endblock api %}</div>
     <div>{% block q %}{% endblock q %}</div>
+    <div>{% block questions %}{% endblock questions %}</div>
 
 
         <div class="section5">
@@ -68,3 +70,5 @@
     </div>
 </body>
 </html>
+
+

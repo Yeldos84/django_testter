@@ -8,6 +8,8 @@
         <h4>Поздравляем!</h4>
         <h3>Вы успешно прошли тестирование</h3>
         <span>Правильные ответы: {{ score }} из {{ test.questions.count }}</span>
+        <p>Вероятность успешной сдачи следующего теста: <b>{{ prediction }}%</b></p>
+        <p>Сдал: {{passed}}</p>
         <div class="test_result">
             <a href="{% url 'test_list' %}">Назад к тестам</a>
 <!--            <a href="{% url 'test_statistics' test.id %}">Посмотреть статистику</a>-->

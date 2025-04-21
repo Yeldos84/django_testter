@@ -65,6 +65,10 @@ class TestResult(models.Model):
     test = models.ForeignKey(Test, on_delete=models.CASCADE, related_name='test')
     score = models.IntegerField()
     date_taken = models.DateTimeField(auto_now_add=True)
+    attempts = models.IntegerField(default=1)  # Количество попыток сдачи теста
+    time_spent = models.FloatField(default=0.0)  # Время на тест в минутах
+    passed = models.BooleanField(default=False)  # Успешность сдачи теста
+    prediction = models.FloatField(null=True, blank=True)
 
     class Meta:
         unique_together = ('user', 'test')

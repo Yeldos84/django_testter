@@ -1,7 +1,7 @@
 import os
 import io
 from datetime import datetime
-
+import joblib
 from django.shortcuts import render, redirect, get_object_or_404, get_list_or_404
 from django.http import HttpResponse, FileResponse
 from django.contrib.auth import login as auth_login, logout as auth_logout
@@ -31,6 +31,23 @@ from . serializers import QuestionsSerializer, TestSerializer, AnswerSerializer,
 from rest_framework import generics
 from .filters import QuestionFilter, AnswerFilter
 from django_filters.rest_framework import DjangoFilterBackend
+
+import numpy as np
+from django.conf import settings
+from django.shortcuts import render, get_object_or_404
+from django.utils.timezone import now
+from .forms import ChatbotForm
+
+
+
+model_path = os.path.join(settings.BASE_DIR, 'prediction_model.pkl')
+
+if os.path.exists(model_path):
+    model = joblib.load(model_path)
+else:
+    model = None  # Если модели нет, обработаем ошибку в коде
+
+
 
 def base(request):
     return render(request, "testapp/base.html")
@@ -89,12 +106,13 @@ def results_to_excel_ok(request):
 
 def results_to_excel_no(request):
     results = TestResult.objects.filter(score__lt=3).select_related('test')
-    data = results.values('test__title', 'user__username', 'score')
+    data = results.values('test__title', 'user__username', 'score', 'prediction')
     df = pd.DataFrame(data)
     df.rename(columns={
         'test__title': 'Название Тестов',
         'user__username': 'пользователь',
-        'score': 'Баллы'
+        'score': 'Баллы',
+        'prediction': 'Вероятность'
     }, inplace=True)
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = 'attachment; filename="res_no.xlsx"'
@@ -183,6 +201,7 @@ def submit_test(request, test_id):
     test = get_object_or_404(Test, pk=test_id)
     questions = test.questions.all()
     score = 0
+    start_time = request.session.get(f"test_{test_id}_start", now())
 
     for question in questions:
         selected_answer = request.POST.get(f'question_{question.id}')
@@ -191,14 +210,52 @@ def submit_test(request, test_id):
             if answer.is_correct:
                 score += 1
 
-    TestResult.objects.update_or_create(
+    time_spent = (now() - start_time).total_seconds() / 60  # В минутах
+    passed = score >= 3  # Считаем, сдал ли тест
+
+    test_result, created = TestResult.objects.get_or_create(
         user=request.user,
         test=test,
-        defaults={'score': score}
+        defaults={
+            'score': score,
+            'time_spent': time_spent,
+            'attempts': 1,
+            'passed': passed  # ✅ добавлено!
+        }
     )
-    if score >= 3:
-        return render(request, 'testapp/test_result.html', {'test': test, 'score': score})
-    return render(request, 'testapp/test_result_bad.html', {'test': test, 'score': score})
+
+    if not created:
+        test_result.attempts += 1
+        test_result.score = score
+        test_result.time_spent = time_spent
+        test_result.passed = passed
+        test_result.save()
+
+    # Предсказание с проверкой, есть ли модель
+    if model:
+        features = np.array([[score, test_result.attempts, time_spent]])
+        proba = model.predict_proba(features)
+
+        if proba.shape[1] > 1:  # Проверяем, есть ли второй класс
+            prediction = round(proba[0][1] * 100, 2)  # Вероятность успешной сдачи
+        else:
+            prediction = round(proba[0][0] * 100, 2)  # Если только 1 класс, берем его вероятность
+    else:
+        prediction = "Модель не загружена"
+
+    test_result.prediction = prediction
+    test_result.save()
+
+    context = {
+        'test': test,
+        'score': score,
+        'passed': "Да" if passed else "Нет",
+        'prediction': round(prediction, 2) if isinstance(prediction, float) else prediction,
+    }
+
+    if passed:
+        return render(request, 'testapp/test_result.html', context)
+    return render(request, 'testapp/test_result_bad.html', context)
 
 
 def test_statistics(request, test_id):
@@ -378,6 +435,47 @@ def create_certificate(request, test_id):
 # APIs ReadOnly
 def render_api(request):
     return render(request, 'testapp/apis.html')
+
+from django.conf import settings
+import openai
+import google.generativeai as genai
+
+genai.configure(api_key=settings.GEMINI_API_KEY)
+def questions(request):
+    response_text = None
+
+    if request.method == 'POST':
+        form = ChatbotForm(request.POST)
+        if form.is_valid():
+            user_input = form.cleaned_data['message']
+
+            try:
+                model = genai.GenerativeModel("gemini-1.5-pro")
+                response = model.generate_content(user_input)
+                response_text = response.text
+            except Exception as e:
+                response_text = f"Ошибка: {str(e)}"
+    else:
+        form = ChatbotForm()
+
+    # models = list(genai.list_models())
+    # for model in models:
+    #     print(model)
+
+    return render(request, 'testapp/questions.html', {
+        'form': form,
+        'response_text': response_text
+    })
+
+
+
+def face_detections(request):
+    return render(request, 'testapp/face_detections.html')
+
+
+
+
+
 class ApiQuestionsViewset(ModelViewSet):
     queryset = Question.objects.all()
     serializer_class = QuestionsSerializer
@@ -397,3 +495,5 @@ class ApiAnswerViewset(ModelViewSet):
 class ApiUserViewset(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+

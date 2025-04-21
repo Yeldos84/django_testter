@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     'testapp',
 
     'django_filters',
+
 ]
 
 MIDDLEWARE = [
@@ -250,7 +251,13 @@ LOGGING = {
     }
 }
 
+OPENAI_API_KEY = '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'
+
+GEMINI_API_KEY = 'AIzaSyDqJJW19dnvGwzoJsItOLXouzAtLtWdcRE'
+
+
 CORS_ALLOWED_ORIGINS = [
 "http://localhost:3000", #For React Project
+"http://localhost:19006",#For React Project Native
 "http://127.0.0.1:8081"  #For Django Project
 ]

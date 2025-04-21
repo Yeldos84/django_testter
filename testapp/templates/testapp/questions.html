@@ -1,0 +1,26 @@
+{% extends "testapp/base.html" %}
+
+
+{% block questions%}
+
+
+<div class="login-container">
+    <div class="login-form">
+        <h2>Задать вопрос</h2>
+        <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="order_btn type="submit">Отправить</button>
+    </form>
+        {% if response_text %}
+            <div class="response">
+                <strong>Ответ:</strong><br>
+                {{ response_text }}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<hr>
+{% endblock questions %}
+
