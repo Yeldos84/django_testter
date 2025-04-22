@@ -1,125 +1,93 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <title>Проверка возраста и гендера</title>
-    <style>
-        #container {
-            position: relative;
-            width: 320px;
-            height: 240px;
-        }
-        video, canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Распознавание лица</title>
+  <style>
+    body {
+      text-align: center;
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
+    }
+    #video {
+      width: 320px;
+      height: 240px;
+      border: 2px solid #333;
+      border-radius: 10px;
+    }
+    #status {
+      margin-top: 15px;
+      font-weight: bold;
+      font-size: 18px;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+  </style>
 </head>
 <body>
-    <h2>Добро пожаловать!</h2>
+  <h1>Распознавание лица и проверка доступа</h1>
+  <video id="video" autoplay></video>
+  <br>
+  <button id="captureBtn">Сделать снимок и отправить</button>
+  <div id="status">Ожидание...</div>
 
-    <button onclick="checkCamera()">🔍 Войти по лицу</button>
-    <p id="status" style="color: red;"></p>
+  <script>
+    const video = document.getElementById("video");
+    const captureBtn = document.getElementById("captureBtn");
+    const statusDiv = document.getElementById("status");
 
-    <div id="container">
-        <video id="video" width="320" height="240" autoplay muted style="display: none;"></video>
-        <canvas id="overlay" width="320" height="240"></canvas>
-    </div>
+    // Запускаем камеру
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        video.srcObject = stream;
+      })
+      .catch(err => {
+        statusDiv.textContent = "Ошибка доступа к камере.";
+        console.error(err);
+      });
 
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.2.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
+    captureBtn.addEventListener("click", async () => {
+      statusDiv.textContent = "Анализ лица...";
 
-    <script>
-        const statusElem = document.getElementById('status');
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('overlay');
-        const ctx = canvas.getContext('2d');
+      // Захватываем кадр
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-        // Порог уверенности (60%)
-        const confidenceThreshold = 0.6;
+      // Преобразуем в blob (jpeg)
+      canvas.toBlob(async (blob) => {
+        const formData = new FormData();
+        formData.append("face_image", blob, "face.jpg");
 
-        async function checkCamera() {
-            statusElem.textContent = "⏳ Инициализация камеры...";
+        try {
+          const response = await fetch("http://localhost:8081/face_detections/", {
+            method: "POST", // Убедись, что используешь POST
+            body: formData
+          });
 
-            const devices = await navigator.mediaDevices.enumerateDevices();
-            const hasCamera = devices.some(device => device.kind === 'videoinput');
+          const data = await response.json();
+          console.log(response);
 
-            if (!hasCamera) {
-                statusElem.textContent = "❌ Камера не найдена.";
-                return;
-            }
-
-            startFaceDetection();
+          if (data.access) {
+            statusDiv.textContent = "✅ " + data.message;
+            setTimeout(() => {
+              window.location.href = data.redirect_url;
+            }, 2000);
+          } else {
+            statusDiv.textContent = "❌ " + data.message;
+          }
+        } catch (error) {
+          console.error("Ошибка при отправке:", error);
+          statusDiv.textContent = "Произошла ошибка при отправке данных.";
         }
-
-        async function startFaceDetection() {
-            statusElem.textContent = "⏳ Запуск камеры...";
-            video.style.display = 'block';
-
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                video.srcObject = stream;
-
-                const model = await blazeface.load();
-                statusElem.textContent = "📷 Камера активна. Ожидание лица...";
-
-                const detect = async () => {
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                    const predictions = await model.estimateFaces(video, false);
-
-                    if (predictions.length > 0) {
-                        let highestConfidence = 0;
-                        let selectedFace = null;
-
-                        // Проверяем все найденные лица и выбираем самое уверенное
-                        predictions.forEach(prediction => {
-                            if (prediction.confidence > highestConfidence) {
-                                highestConfidence = prediction.confidence;
-                                selectedFace = prediction;
-                            }
-                        });
-
-                        // Если находим лицо с достаточной уверенностью
-                        if (highestConfidence >= confidenceThreshold) {
-                            const [x, y] = selectedFace.topLeft;
-                            const [x2, y2] = selectedFace.bottomRight;
-                            const width = x2 - x;
-                            const height = y2 - y;
-
-                            // Рисуем рамку
-                            ctx.beginPath();
-                            ctx.strokeStyle = "lime";
-                            ctx.lineWidth = 2;
-                            ctx.rect(x, y, width, height);
-                            ctx.stroke();
-
-                            // Надпись
-                            ctx.font = "16px Arial";
-                            ctx.fillStyle = "lime";
-                            ctx.fillText("Лицо найдено", x, y - 10);
-
-                            statusElem.textContent = "✅ Лицо распознано! Перенаправление...";
-
-                            // Отправка данных на сервер
-                            setTimeout(() => {
-                                window.location.href = "/profile/"; // Перенаправление на страницу профиля
-                            }, 1000);
-                        } else {
-                            statusElem.textContent = `❌ Лицо не распознано с достаточной уверенностью. Confidence: ${highestConfidence.toFixed(2)}`;
-                        }
-                    } else {
-                        statusElem.textContent = "❌ Лицо не найдено. Попробуйте подойти ближе.";
-                        requestAnimationFrame(detect);
-                    }
-                };
-
-                detect();
-            } catch (err) {
-                statusElem.textContent = "❌ Ошибка доступа к камере: " + err.message;
-            }
-        }
-    </script>
+      }, "image/jpeg");
+    });
+  </script>
 </body>
 </html>

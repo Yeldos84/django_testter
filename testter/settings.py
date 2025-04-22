@@ -253,7 +253,7 @@ LOGGING = {
 
 
 
-
+GEMINI_API_KEY = 'AIzaSyDqJJW19dnvGwzoJsItOLXouzAtLtWdcRE'
 
 
 CORS_ALLOWED_ORIGINS = [

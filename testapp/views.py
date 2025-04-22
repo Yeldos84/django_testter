@@ -469,11 +469,73 @@ def questions(request):
 
 
 
+# def face_detections(request):
+#     return render(request, 'testapp/face_detections.html')
+
+
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+import uuid
+import cv2
+import numpy as np
+from deepface import DeepFace
+
+
+
+@csrf_exempt  # Отключаем проверку CSRF для этого эндпоинта
 def face_detections(request):
-    return render(request, 'testapp/face_detections.html')
+    if request.method != "POST":
+        context = {
+            "access": False,
+            "message": "Неверный метод"
+        }
+        return render(request, 'testapp/face_detections.html', context)
 
+    # Получаем изображение
+    image_file = request.FILES.get('face_image')
+    if not image_file:
+        context = {
+            "access": False,
+            "message": "Файл не получен"
+        }
+        return render(request, 'testapp/face_detections.html', context)
 
+    # Сохраняем изображение временно
+    filename =f"{uuid.uuid4().hex}.jpg"
+    file_path = default_storage.save(filename, ContentFile(image_file.read()))
 
+    full_path = default_storage.path(file_path)
+
+    try:
+        # Анализируем изображение (пол, возраст)
+        analysis = DeepFace.analyze(img_path=full_path, actions=['age', 'gender'], enforce_detection=False)[0]
+        age = analysis.get("age", 0)
+        gender = analysis.get("gender", "").lower()
+
+        # Условие для доступа
+        if gender == "man" and age >= 18:
+            context = {
+                "access": True,
+                "message": "Доступ разрешён",
+                "redirect_url": "/profile"
+            }
+        else:
+            context = {
+                "access": False,
+                "message": f"Доступ запрещён: {gender}, {age} лет"
+            }
+
+        return render(request, 'testapp/face_detections.html', context)
+
+    except Exception as e:
+        print("[ERROR] Ошибка анализа лица:", e)
+        context = {
+            "access": False,
+            "message": "Ошибка анализа лица"
+        }
+        return render(request, 'testapp/face_detections.html', context)
 
 
 class ApiQuestionsViewset(ModelViewSet):
